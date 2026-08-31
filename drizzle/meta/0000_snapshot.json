@@ -1,0 +1,1830 @@
+{
+  "id": "ce03d509-4766-4e4f-a50c-95ed639ea168",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "siginex.alerta": {
+      "name": "alerta",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "severidad": {
+          "name": "severidad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "detalle": {
+          "name": "detalle",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "origen_id": {
+          "name": "origen_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'nueva'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "despachada_en": {
+          "name": "despachada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "ix_alerta_estado": {
+          "name": "ix_alerta_estado",
+          "columns": [
+            {
+              "expression": "estado",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "severidad",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "creado_en",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "alerta_tenant_id_tenant_id_fk": {
+          "name": "alerta_tenant_id_tenant_id_fk",
+          "tableFrom": "alerta",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "alerta_tipo_check": {
+          "name": "alerta_tipo_check",
+          "value": "\"siginex\".\"alerta\".\"tipo\" IN ('normativa','mercado','plan')"
+        },
+        "alerta_severidad_check": {
+          "name": "alerta_severidad_check",
+          "value": "\"siginex\".\"alerta\".\"severidad\" IN ('critica','alta','media','informativa')"
+        },
+        "alerta_estado_check": {
+          "name": "alerta_estado_check",
+          "value": "\"siginex\".\"alerta\".\"estado\" IN ('nueva','despachada','resuelta')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "siginex.diagnostico": {
+      "name": "diagnostico",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organizacion_id": {
+          "name": "organizacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kb_version": {
+          "name": "kb_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado": {
+          "name": "estado",
+          "type": "estado_diag",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en_progreso'"
+        },
+        "modo": {
+          "name": "modo",
+          "type": "modo_diagnostico",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'completo'"
+        },
+        "exigir_completitud": {
+          "name": "exigir_completitud",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "score_sgi": {
+          "name": "score_sgi",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_sgi": {
+          "name": "nivel_sgi",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cumplimiento_global": {
+          "name": "cumplimiento_global",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "madurez_global": {
+          "name": "madurez_global",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_tecnologico": {
+          "name": "nivel_tecnologico",
+          "type": "nivel_tecnologico",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completado_en": {
+          "name": "completado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "ix_diag_tenant": {
+          "name": "ix_diag_tenant",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ix_diag_org": {
+          "name": "ix_diag_org",
+          "columns": [
+            {
+              "expression": "organizacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "creado_en",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ux_diag_idem": {
+          "name": "ux_diag_idem",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "idempotency_key IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "diagnostico_tenant_id_tenant_id_fk": {
+          "name": "diagnostico_tenant_id_tenant_id_fk",
+          "tableFrom": "diagnostico",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "diagnostico_organizacion_id_organizacion_id_fk": {
+          "name": "diagnostico_organizacion_id_organizacion_id_fk",
+          "tableFrom": "diagnostico",
+          "tableTo": "organizacion",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "organizacion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "diagnostico_kb_version_kb_version_version_fk": {
+          "name": "diagnostico_kb_version_kb_version_version_fk",
+          "tableFrom": "diagnostico",
+          "tableTo": "kb_version",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "kb_version"
+          ],
+          "columnsTo": [
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "diagnostico_nivel_sgi_check": {
+          "name": "diagnostico_nivel_sgi_check",
+          "value": "\"siginex\".\"diagnostico\".\"nivel_sgi\" BETWEEN 1 AND 5"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "siginex.evento_auditoria": {
+      "name": "evento_auditoria",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor": {
+          "name": "actor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accion": {
+          "name": "accion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entidad": {
+          "name": "entidad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entidad_id": {
+          "name": "entidad_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_evt_tenant": {
+          "name": "ix_evt_tenant",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "creado_en",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.evidencia": {
+      "name": "evidencia",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "respuesta_id": {
+          "name": "respuesta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uri": {
+          "name": "uri",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_evid_resp": {
+          "name": "ix_evid_resp",
+          "columns": [
+            {
+              "expression": "respuesta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "evidencia_tenant_id_tenant_id_fk": {
+          "name": "evidencia_tenant_id_tenant_id_fk",
+          "tableFrom": "evidencia",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "evidencia_tipo_check": {
+          "name": "evidencia_tipo_check",
+          "value": "\"siginex\".\"evidencia\".\"tipo\" IN ('url','archivo','nota')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "siginex.kb_version": {
+      "name": "kb_version",
+      "schema": "siginex",
+      "columns": {
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "publicado_en": {
+          "name": "publicado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "checksum": {
+          "name": "checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_preguntas": {
+          "name": "total_preguntas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.market_signal": {
+      "name": "market_signal",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "impacto": {
+          "name": "impacto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fuente": {
+          "name": "fuente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resumen": {
+          "name": "resumen",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingerido_en": {
+          "name": "ingerido_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.normativa_entry": {
+      "name": "normativa_entry",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "modulo_sgi": {
+          "name": "modulo_sgi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fuente": {
+          "name": "fuente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relevancia": {
+          "name": "relevancia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resumen": {
+          "name": "resumen",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingerido_en": {
+          "name": "ingerido_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_norm_modulo": {
+          "name": "ix_norm_modulo",
+          "columns": [
+            {
+              "expression": "modulo_sgi",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "estado",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.organizacion": {
+      "name": "organizacion",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nit": {
+          "name": "nit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sector": {
+          "name": "sector",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tamano": {
+          "name": "tamano",
+          "type": "tamano_empresa",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aplicabilidad": {
+          "name": "aplicabilidad",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_org_tenant": {
+          "name": "ix_org_tenant",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ix_org_sector": {
+          "name": "ix_org_sector",
+          "columns": [
+            {
+              "expression": "sector",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ix_org_nombre_trgm": {
+          "name": "ix_org_nombre_trgm",
+          "columns": [
+            {
+              "expression": "\"nombre\" gin_trgm_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "organizacion_tenant_id_tenant_id_fk": {
+          "name": "organizacion_tenant_id_tenant_id_fk",
+          "tableFrom": "organizacion",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.recomendacion": {
+      "name": "recomendacion",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diagnostico_id": {
+          "name": "diagnostico_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pregunta_id": {
+          "name": "pregunta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prioridad": {
+          "name": "prioridad",
+          "type": "prioridad_reco",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acciones": {
+          "name": "acciones",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "norma_refs": {
+          "name": "norma_refs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_reco_diag": {
+          "name": "ix_reco_diag",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "prioridad",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recomendacion_tenant_id_tenant_id_fk": {
+          "name": "recomendacion_tenant_id_tenant_id_fk",
+          "tableFrom": "recomendacion",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recomendacion_diagnostico_id_diagnostico_id_fk": {
+          "name": "recomendacion_diagnostico_id_diagnostico_id_fk",
+          "tableFrom": "recomendacion",
+          "tableTo": "diagnostico",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "diagnostico_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.respuesta": {
+      "name": "respuesta",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diagnostico_id": {
+          "name": "diagnostico_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pregunta_id": {
+          "name": "pregunta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_pregunta",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor": {
+          "name": "valor",
+          "type": "valor_respuesta",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "peso": {
+          "name": "peso",
+          "type": "numeric(8, 5)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evidencia_ref": {
+          "name": "evidencia_ref",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_resp_diag": {
+          "name": "ix_resp_diag",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ix_resp_skill": {
+          "name": "ix_resp_skill",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "skill_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "respuesta_tenant_id_tenant_id_fk": {
+          "name": "respuesta_tenant_id_tenant_id_fk",
+          "tableFrom": "respuesta",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "respuesta_diagnostico_id_diagnostico_id_fk": {
+          "name": "respuesta_diagnostico_id_diagnostico_id_fk",
+          "tableFrom": "respuesta",
+          "tableTo": "diagnostico",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "diagnostico_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "respuesta_diagnostico_pregunta_key": {
+          "name": "respuesta_diagnostico_pregunta_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "diagnostico_id",
+            "pregunta_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.resultado_pilar": {
+      "name": "resultado_pilar",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diagnostico_id": {
+          "name": "diagnostico_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cumplimiento_pct": {
+          "name": "cumplimiento_pct",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "madurez_promedio": {
+          "name": "madurez_promedio",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "banda": {
+          "name": "banda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hallazgos": {
+          "name": "hallazgos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        }
+      },
+      "indexes": {
+        "ix_respil_diag": {
+          "name": "ix_respil_diag",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "resultado_pilar_tenant_id_tenant_id_fk": {
+          "name": "resultado_pilar_tenant_id_tenant_id_fk",
+          "tableFrom": "resultado_pilar",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "resultado_pilar_diagnostico_id_diagnostico_id_fk": {
+          "name": "resultado_pilar_diagnostico_id_diagnostico_id_fk",
+          "tableFrom": "resultado_pilar",
+          "tableTo": "diagnostico",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "diagnostico_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "resultado_pilar_diagnostico_skill_key": {
+          "name": "resultado_pilar_diagnostico_skill_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "diagnostico_id",
+            "skill_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "resultado_pilar_nivel_check": {
+          "name": "resultado_pilar_nivel_check",
+          "value": "\"siginex\".\"resultado_pilar\".\"nivel\" BETWEEN 1 AND 5"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "siginex.ruta_aprendizaje": {
+      "name": "ruta_aprendizaje",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recomendacion_id": {
+          "name": "recomendacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diagnostico_id": {
+          "name": "diagnostico_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "brecha": {
+          "name": "brecha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurso_url": {
+          "name": "recurso_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origen": {
+          "name": "origen",
+          "type": "origen_ruta",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'interno'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ix_ruta_diag": {
+          "name": "ix_ruta_diag",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ruta_aprendizaje_tenant_id_tenant_id_fk": {
+          "name": "ruta_aprendizaje_tenant_id_tenant_id_fk",
+          "tableFrom": "ruta_aprendizaje",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ruta_aprendizaje_recomendacion_id_recomendacion_id_fk": {
+          "name": "ruta_aprendizaje_recomendacion_id_recomendacion_id_fk",
+          "tableFrom": "ruta_aprendizaje",
+          "tableTo": "recomendacion",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "recomendacion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ruta_aprendizaje_diagnostico_id_diagnostico_id_fk": {
+          "name": "ruta_aprendizaje_diagnostico_id_diagnostico_id_fk",
+          "tableFrom": "ruta_aprendizaje",
+          "tableTo": "diagnostico",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "diagnostico_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "siginex.tarea_mejora": {
+      "name": "tarea_mejora",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diagnostico_id": {
+          "name": "diagnostico_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recomendacion_id": {
+          "name": "recomendacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pregunta_id": {
+          "name": "pregunta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "brecha": {
+          "name": "brecha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accion": {
+          "name": "accion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "norma_ref": {
+          "name": "norma_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prioridad": {
+          "name": "prioridad",
+          "type": "prioridad_reco",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "responsable": {
+          "name": "responsable",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plazo_dias": {
+          "name": "plazo_dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fecha_limite": {
+          "name": "fecha_limite",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "esfuerzo": {
+          "name": "esfuerzo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fase": {
+          "name": "fase",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criterio_cierre": {
+          "name": "criterio_cierre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "estado_tarea",
+          "typeSchema": "siginex",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendiente'"
+        },
+        "ruta_aprendizaje_id": {
+          "name": "ruta_aprendizaje_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "cerrado_en": {
+          "name": "cerrado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "ix_tarea_diag": {
+          "name": "ix_tarea_diag",
+          "columns": [
+            {
+              "expression": "diagnostico_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "prioridad",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ix_tarea_estado": {
+          "name": "ix_tarea_estado",
+          "columns": [
+            {
+              "expression": "estado",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fecha_limite",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "tarea_mejora_tenant_id_tenant_id_fk": {
+          "name": "tarea_mejora_tenant_id_tenant_id_fk",
+          "tableFrom": "tarea_mejora",
+          "tableTo": "tenant",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tarea_mejora_diagnostico_id_diagnostico_id_fk": {
+          "name": "tarea_mejora_diagnostico_id_diagnostico_id_fk",
+          "tableFrom": "tarea_mejora",
+          "tableTo": "diagnostico",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "diagnostico_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tarea_mejora_recomendacion_id_recomendacion_id_fk": {
+          "name": "tarea_mejora_recomendacion_id_recomendacion_id_fk",
+          "tableFrom": "tarea_mejora",
+          "tableTo": "recomendacion",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "recomendacion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tarea_mejora_ruta_aprendizaje_id_ruta_aprendizaje_id_fk": {
+          "name": "tarea_mejora_ruta_aprendizaje_id_ruta_aprendizaje_id_fk",
+          "tableFrom": "tarea_mejora",
+          "tableTo": "ruta_aprendizaje",
+          "schemaTo": "siginex",
+          "columnsFrom": [
+            "ruta_aprendizaje_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "tarea_mejora_esfuerzo_check": {
+          "name": "tarea_mejora_esfuerzo_check",
+          "value": "\"siginex\".\"tarea_mejora\".\"esfuerzo\" IN ('Alto','Medio','Bajo')"
+        },
+        "tarea_mejora_fase_check": {
+          "name": "tarea_mejora_fase_check",
+          "value": "\"siginex\".\"tarea_mejora\".\"fase\" BETWEEN 1 AND 3"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "siginex.tenant": {
+      "name": "tenant",
+      "schema": "siginex",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activo": {
+          "name": "activo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tenant_slug_unique": {
+          "name": "tenant_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "siginex.estado_diag": {
+      "name": "estado_diag",
+      "schema": "siginex",
+      "values": [
+        "en_progreso",
+        "calculado",
+        "archivado"
+      ]
+    },
+    "siginex.estado_tarea": {
+      "name": "estado_tarea",
+      "schema": "siginex",
+      "values": [
+        "pendiente",
+        "en_progreso",
+        "cerrada",
+        "vencida"
+      ]
+    },
+    "siginex.modo_diagnostico": {
+      "name": "modo_diagnostico",
+      "schema": "siginex",
+      "values": [
+        "completo",
+        "rapido"
+      ]
+    },
+    "siginex.nivel_tecnologico": {
+      "name": "nivel_tecnologico",
+      "schema": "siginex",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "siginex.origen_ruta": {
+      "name": "origen_ruta",
+      "schema": "siginex",
+      "values": [
+        "interno",
+        "externo"
+      ]
+    },
+    "siginex.prioridad_reco": {
+      "name": "prioridad_reco",
+      "schema": "siginex",
+      "values": [
+        "alta",
+        "media",
+        "baja"
+      ]
+    },
+    "siginex.tamano_empresa": {
+      "name": "tamano_empresa",
+      "schema": "siginex",
+      "values": [
+        "micro",
+        "pequena",
+        "mediana",
+        "grande"
+      ]
+    },
+    "siginex.tipo_pregunta": {
+      "name": "tipo_pregunta",
+      "schema": "siginex",
+      "values": [
+        "si_no",
+        "escala",
+        "cero_uno_dos"
+      ]
+    },
+    "siginex.valor_respuesta": {
+      "name": "valor_respuesta",
+      "schema": "siginex",
+      "values": [
+        "0",
+        "1",
+        "2",
+        "si",
+        "no",
+        "na",
+        "sin_dato"
+      ]
+    }
+  },
+  "schemas": {
+    "siginex": "siginex"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
