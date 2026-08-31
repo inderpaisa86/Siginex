@@ -3,8 +3,9 @@
 #
 # Uso:
 #   1. Copia .env.example a .env y ajusta credenciales.
-#   2. docker compose up -d --build
-#   3. Aplica migraciones:  docker compose run --rm migrate
+#   2. docker compose up -d --build          # levanta db + web
+#   3. docker compose run --rm migrate       # aplica el schema
+#   4. docker compose run --rm seed          # crea tenant + API key (una vez)
 #
 # El servicio `web` es la app fullstack (frontend + rutas de API).
 
@@ -41,6 +42,22 @@ services:
       node node_modules/drizzle-kit/bin.cjs migrate
     restart: "no"
 
+  # Servicio efímero para sembrar un tenant + API key.
+  # Ejecuta:  docker compose run --rm seed
+  # Imprime la API key en claro una sola vez: guárdala.
+  seed:
+    build:
+      context: .
+      target: builder
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-siginex}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-siginex}
+    command: >
+      node scripts/seed.mjs
+    restart: "no"
+
   web:
     build:
       context: .
@@ -52,7 +69,6 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-siginex}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-siginex}
-      SIGINEX_API_KEYS: ${SIGINEX_API_KEYS:-demo-key}
     ports:
       - "3000:3000"
 
