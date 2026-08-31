@@ -1,15 +1,23 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
+import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import postgres from "postgres";
+import ws from "ws";
 import * as schema from "./schema";
 
 /**
- * Cliente de base de datos de SIGINEX (Drizzle + postgres.js).
+ * Cliente de base de datos de SIGINEX (Drizzle).
  *
- * Multi-tenant con Row-Level Security: NUNCA se debe usar este cliente
- * "crudo" para queries de negocio directamente. Todo acceso a datos de una
- * organización pasa por `withTenant()` (ver ./tenant.ts), que fija el tenant
- * activo de la sesión antes de cualquier query. Este cliente se usa solo para
- * operaciones sin tenant (health checks, consulta pública del KB, migraciones).
+ * Soporta dos entornos con el mismo interfaz:
+ *  - Neon serverless (producción en Vercel): driver neon-serverless por
+ *    WebSocket, que SÍ soporta transacciones (necesarias para la RLS por
+ *    tenant). Se activa cuando DATABASE_URL apunta a Neon.
+ *  - PostgreSQL normal (local / Docker): driver postgres.js.
+ *
+ * Multi-tenant con Row-Level Security: NUNCA usar este cliente "crudo" para
+ * queries de negocio directamente. Todo acceso a datos de una organización
+ * pasa por withTenant() (ver ./tenant.ts). El cliente crudo es solo para
+ * operaciones sin tenant (health, KB público, migraciones, resolver API key).
  */
 
 const connectionString = process.env.DATABASE_URL;
@@ -20,23 +28,39 @@ if (!connectionString) {
   );
 }
 
-// Reutiliza la conexión en desarrollo para evitar agotar el pool con HMR.
-const globalForDb = globalThis as unknown as {
-  __siginexSql?: ReturnType<typeof postgres>;
-};
+// Estrechado a string tras la validación (evita string | undefined aguas abajo).
+const url: string = connectionString;
+const esNeon = /neon\.tech|neon\.build/.test(url);
 
-export const sql =
-  globalForDb.__siginexSql ??
-  postgres(connectionString, {
+/**
+ * Ambos drivers exponen el mismo interfaz de Drizzle (select/insert/transaction/
+ * execute...). Unificamos el tipo con el del driver postgres.js para que el
+ * resto del código no dependa del driver concreto.
+ */
+type DbCliente = ReturnType<typeof drizzlePg<typeof schema>>;
+
+function crearDb(): DbCliente {
+  if (esNeon) {
+    neonConfig.webSocketConstructor = ws;
+    const pool = new Pool({ connectionString: url });
+    return drizzleNeon(pool, { schema }) as unknown as DbCliente;
+  }
+  const sql = postgres(url, {
     max: 10,
-    // El search_path coincide con el schema del DDL de referencia.
     connection: { search_path: "siginex,public" },
   });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__siginexSql = sql;
+  return drizzlePg(sql, { schema });
 }
 
-export const db = drizzle(sql, { schema });
+// Reutiliza el cliente en desarrollo para no agotar el pool con HMR.
+const globalForDb = globalThis as unknown as {
+  __siginexDb?: DbCliente;
+};
 
-export type Database = typeof db;
+export const db: DbCliente = globalForDb.__siginexDb ?? crearDb();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.__siginexDb = db;
+}
+
+export type Database = DbCliente;
