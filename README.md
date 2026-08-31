@@ -4,11 +4,6 @@ Capa de inteligencia de **DQnexus** para el autodiagnóstico del Sistema de
 Gestión Integral (SGI): 9 módulos, banco de preguntas, motor de scoring con
 aplicabilidad, orquestador, plan de mejora, benchmarking y vigilancia.
 
-App fullstack en **Next.js (App Router) + TypeScript**, **PostgreSQL** con
-**Drizzle ORM** y despliegue en **Docker**. Ver `../.kiro/steering/` para el
-contexto de producto, stack y estructura, y `../reference/` para la
-implementación de referencia (fuente de verdad funcional).
-
 ## Requisitos
 
 - Node.js 22+ (probado con 24)

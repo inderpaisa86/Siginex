@@ -469,3 +469,27 @@ export const alerta = siginex.table(
     index("ix_alerta_estado").on(t.estado, t.severidad, t.creadoEn.desc()),
   ],
 );
+
+// ---------------------------------------------------------------------------
+// API keys (credenciales de acceso). No lleva RLS: se consulta ANTES de fijar
+// el tenant de la sesión, para resolver a qué tenant pertenece la key.
+// La key nunca se guarda en claro: solo su hash SHA-256.
+// ---------------------------------------------------------------------------
+export const apiKey = siginex.table(
+  "api_key",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    keyHash: text("key_hash").notNull().unique(),
+    nombre: text("nombre"),
+    activa: boolean("activa").notNull().default(true),
+    scopes: jsonb("scopes").notNull().default(sql`'[]'::jsonb`),
+    creadoEn: timestamp("creado_en", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    ultimoUsoEn: timestamp("ultimo_uso_en", { withTimezone: true }),
+  },
+  (t) => [index("ix_apikey_tenant").on(t.tenantId)],
+);
