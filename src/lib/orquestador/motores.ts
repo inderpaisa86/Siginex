@@ -107,3 +107,29 @@ export function rutaFor(mid: ModuloId, q: PreguntaKb): string | null {
   }
   return route;
 }
+
+/**
+ * Calcula el benchmark de mercado para un nivel tecnológico (1-5): compara a la
+ * empresa contra las 9 herramientas del mercado (BENCH_NIVELES). Función pura,
+ * reutilizada por run() y por el endpoint/servicio de benchmark.
+ */
+export interface BenchmarkResult {
+  nivel_empresa: number;
+  promedio_mercado: number;
+  rango_mercado: [number, number];
+  herramientas_por_encima: number;
+  brecha_al_lider: number;
+  recomendacion: string;
+}
+
+export function calcularBenchmark(nivel: number): BenchmarkResult {
+  const prom = BENCH_NIVELES.reduce((a, b) => a + b, 0) / BENCH_NIVELES.length;
+  return {
+    nivel_empresa: nivel,
+    promedio_mercado: Math.round(prom * 10) / 10,
+    rango_mercado: [Math.min(...BENCH_NIVELES), Math.max(...BENCH_NIVELES)],
+    herramientas_por_encima: BENCH_NIVELES.filter((x) => x > nivel).length,
+    brecha_al_lider: Math.max(...BENCH_NIVELES) - nivel,
+    recomendacion: BENCH_RECO[nivel] ?? "",
+  };
+}

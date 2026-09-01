@@ -399,3 +399,103 @@ export async function obtenerResultado(
     return { ...diag, pilares, recomendaciones: recos };
   });
 }
+
+import { calcularBenchmark, type BenchmarkResult } from "@/lib/orquestador";
+
+/**
+ * Registra el nivel tecnológico de la empresa (1-5) en el diagnóstico y
+ * devuelve la comparación con el mercado. Idempotente: sobrescribe el nivel.
+ */
+export async function registrarBenchmark(
+  diagnosticoId: string,
+  nivel: number,
+): Promise<BenchmarkResult> {
+  if (!Number.isInteger(nivel) || nivel < 1 || nivel > 5) {
+    throw new Error("El nivel tecnológico debe ser un entero de 1 a 5.");
+  }
+  const tenantId = tenantActual();
+  await withTenant(tenantId, async (tx) => {
+    await tx
+      .update(diagnostico)
+      .set({
+        nivelTecnologico: String(nivel) as "1" | "2" | "3" | "4" | "5",
+      })
+      .where(eq(diagnostico.id, diagnosticoId));
+  });
+  return calcularBenchmark(nivel);
+}
+
+/** Devuelve el benchmark si el diagnóstico ya tiene nivel tecnológico declarado. */
+export async function obtenerBenchmark(
+  diagnosticoId: string,
+): Promise<BenchmarkResult | null> {
+  const tenantId = tenantActual();
+  return withTenant(tenantId, async (tx) => {
+    const [diag] = await tx
+      .select({ nivelTecnologico: diagnostico.nivelTecnologico })
+      .from(diagnostico)
+      .where(eq(diagnostico.id, diagnosticoId))
+      .limit(1);
+    if (!diag?.nivelTecnologico) return null;
+    return calcularBenchmark(Number(diag.nivelTecnologico));
+  });
+}
+
+export interface TareaPlanUI {
+  skillId: string;
+  preguntaId: string | null;
+  brecha: string;
+  accion: string;
+  normaRef: string | null;
+  prioridad: string;
+  responsable: string | null;
+  plazoDias: number | null;
+  fase: number | null;
+  criterioCierre: string | null;
+}
+
+/** Devuelve las tareas del plan de mejora de un diagnóstico, priorizadas. */
+export async function obtenerPlanMejora(
+  diagnosticoId: string,
+): Promise<TareaPlanUI[]> {
+  const tenantId = tenantActual();
+  return withTenant(tenantId, async (tx) => {
+    const rows = await tx
+      .select({
+        skillId: tareaMejora.skillId,
+        preguntaId: tareaMejora.preguntaId,
+        brecha: tareaMejora.brecha,
+        accion: tareaMejora.accion,
+        normaRef: tareaMejora.normaRef,
+        prioridad: tareaMejora.prioridad,
+        responsable: tareaMejora.responsable,
+        plazoDias: tareaMejora.plazoDias,
+        fase: tareaMejora.fase,
+        criterioCierre: tareaMejora.criterioCierre,
+      })
+      .from(tareaMejora)
+      .where(eq(tareaMejora.diagnosticoId, diagnosticoId))
+      .orderBy(tareaMejora.prioridad, tareaMejora.skillId);
+    return rows;
+  });
+}
+
+/** Último diagnóstico calculado (para vistas que no reciben un id explícito). */
+export async function ultimoDiagnosticoCalculado(): Promise<
+  { id: string; organizacionNombre: string } | null
+> {
+  const tenantId = tenantActual();
+  return withTenant(tenantId, async (tx) => {
+    const [row] = await tx
+      .select({
+        id: diagnostico.id,
+        organizacionNombre: organizacion.nombre,
+      })
+      .from(diagnostico)
+      .innerJoin(organizacion, eq(diagnostico.organizacionId, organizacion.id))
+      .where(eq(diagnostico.estado, "calculado"))
+      .orderBy(desc(diagnostico.completadoEn))
+      .limit(1);
+    return row ?? null;
+  });
+}

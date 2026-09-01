@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
-import { obtenerResultado } from "@/lib/server/diagnostico-service";
+import { obtenerResultado, obtenerBenchmark } from "@/lib/server/diagnostico-service";
 import { MODULOS_SGI } from "@/lib/dominio/modulos";
+import { Benchmark } from "./Benchmark";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function ResultadosPage({
   const { id } = await params;
   const r = await obtenerResultado(id);
   if (!r) notFound();
+  const benchmark = await obtenerBenchmark(id);
 
   const score = r.scoreSgi != null ? Number(r.scoreSgi) : 0;
 
@@ -105,6 +107,9 @@ export default async function ResultadosPage({
             })}
           </div>
         </section>
+
+        {/* Benchmark de mercado */}
+        <Benchmark diagnosticoId={id} inicial={benchmark} />
 
         {/* Brechas prioritarias */}
         <section className="rounded-[14px] border border-border bg-card p-6 shadow-[var(--shadow-card)]">

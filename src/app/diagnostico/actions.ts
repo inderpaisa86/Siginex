@@ -7,6 +7,7 @@ import {
   crearDiagnostico,
   guardarRespuestas,
   calcularDiagnostico,
+  registrarBenchmark,
 } from "@/lib/server/diagnostico-service";
 
 /** Crea una organización e inicia un diagnóstico; redirige al cuestionario. */
@@ -48,4 +49,13 @@ export async function accionGuardarRespuestas(
 export async function accionCalcular(diagnosticoId: string) {
   await calcularDiagnostico(diagnosticoId);
   redirect(`/diagnostico/${diagnosticoId}/resultados`);
+}
+
+/** Registra el nivel tecnológico (1-5) y refresca la vista de resultados. */
+export async function accionRegistrarBenchmark(
+  diagnosticoId: string,
+  nivel: number,
+) {
+  await registrarBenchmark(diagnosticoId, nivel);
+  revalidatePath(`/diagnostico/${diagnosticoId}/resultados`);
 }

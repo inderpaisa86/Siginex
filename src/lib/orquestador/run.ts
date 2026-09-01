@@ -2,7 +2,7 @@ import type { Kb, ModuloKb } from "@/lib/dominio/kb/banco";
 import type { ModuloId } from "@/lib/dominio/modulos";
 import { aplica } from "./aplicabilidad";
 import { levelFor, round2 } from "./scoring";
-import { RESP, ADOPT, BENCH_NIVELES, BENCH_RECO, esLegal, rutaFor } from "./motores";
+import { RESP, esLegal, rutaFor, calcularBenchmark } from "./motores";
 import type {
   Alerta,
   Brecha,
@@ -142,19 +142,10 @@ export function run(
     }));
 
   // Benchmark (opcional).
-  let benchmark: ResultadoConsolidado["benchmark"] = null;
   const nt = company.nivel_tecnologico;
-  if (nt) {
-    const prom = BENCH_NIVELES.reduce((a, b) => a + b, 0) / BENCH_NIVELES.length;
-    benchmark = {
-      nivel_empresa: nt,
-      promedio_mercado: round2(prom * 10) / 10,
-      rango_mercado: [Math.min(...BENCH_NIVELES), Math.max(...BENCH_NIVELES)],
-      herramientas_por_encima: BENCH_NIVELES.filter((x) => x > nt).length,
-      brecha_al_lider: Math.max(...BENCH_NIVELES) - nt,
-      recomendacion: BENCH_RECO[nt] ?? "",
-    };
-  }
+  const benchmark: ResultadoConsolidado["benchmark"] = nt
+    ? calcularBenchmark(nt)
+    : null;
 
   // Alertas (brechas críticas).
   const criticas = brechas.filter((b) => b.prioridad === "alta");
