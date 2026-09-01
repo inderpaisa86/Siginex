@@ -11,10 +11,18 @@ import {
   rutaAprendizaje,
   eventoAuditoria,
   kbVersion,
+  normativaEntry,
+  marketSignal,
 } from "@/lib/db/schema";
 import { KB } from "@/lib/dominio/kb/banco";
 import { APLICABILIDAD_DEFAULT, aplicabilidadSchema } from "@/lib/dominio/aplicabilidad";
-import { run, validarContrato, type ValorRespuesta } from "@/lib/orquestador";
+import {
+  run,
+  validarContrato,
+  calcularBenchmark,
+  type ValorRespuesta,
+  type BenchmarkResult,
+} from "@/lib/orquestador";
 import { tenantActual } from "./sesion";
 
 /**
@@ -400,8 +408,6 @@ export async function obtenerResultado(
   });
 }
 
-import { calcularBenchmark, type BenchmarkResult } from "@/lib/orquestador";
-
 /**
  * Registra el nivel tecnológico de la empresa (1-5) en el diagnóstico y
  * devuelve la comparación con el mercado. Idempotente: sobrescribe el nivel.
@@ -497,5 +503,66 @@ export async function ultimoDiagnosticoCalculado(): Promise<
       .orderBy(desc(diagnostico.completadoEn))
       .limit(1);
     return row ?? null;
+  });
+}
+
+export interface NormativaUI {
+  id: string;
+  moduloSgi: string | null;
+  titulo: string;
+  fuente: string | null;
+  estado: string | null;
+  relevancia: string | null;
+  fecha: string | null;
+}
+
+export interface MarketSignalUI {
+  id: string;
+  titulo: string;
+  tipo: string | null;
+  impacto: string | null;
+  fuente: string | null;
+  fecha: string | null;
+}
+
+/**
+ * Feed de vigilancia (normativa + mercado). Son datos globales (sin tenant);
+ * se leen con el cliente por tenant igualmente (no rompe RLS: esas tablas no
+ * la tienen). Hoy pueden estar vacíos hasta que haya ingesta de datos.
+ */
+export async function obtenerVigilancia(): Promise<{
+  normativa: NormativaUI[];
+  mercado: MarketSignalUI[];
+}> {
+  const tenantId = tenantActual();
+  return withTenant(tenantId, async (tx) => {
+    const normativa = await tx
+      .select({
+        id: normativaEntry.id,
+        moduloSgi: normativaEntry.moduloSgi,
+        titulo: normativaEntry.titulo,
+        fuente: normativaEntry.fuente,
+        estado: normativaEntry.estado,
+        relevancia: normativaEntry.relevancia,
+        fecha: normativaEntry.fecha,
+      })
+      .from(normativaEntry)
+      .orderBy(desc(normativaEntry.ingeridoEn))
+      .limit(50);
+
+    const mercado = await tx
+      .select({
+        id: marketSignal.id,
+        titulo: marketSignal.titulo,
+        tipo: marketSignal.tipo,
+        impacto: marketSignal.impacto,
+        fuente: marketSignal.fuente,
+        fecha: marketSignal.fecha,
+      })
+      .from(marketSignal)
+      .orderBy(desc(marketSignal.ingeridoEn))
+      .limit(50);
+
+    return { normativa, mercado };
   });
 }
