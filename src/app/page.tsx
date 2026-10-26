@@ -79,7 +79,11 @@ export default function Home() {
             {MODULOS_SGI.map((m) => (
               <Link
                 key={m.id}
-                href={`/diagnostico/${m.id}`}
+                // Las tarjetas de módulo son informativas: el diagnóstico se
+                // inicia desde /diagnostico (crear organización -> diagnóstico).
+                // No enlazar a /diagnostico/<modulo>: esa ruta espera el UUID
+                // de un diagnóstico y un id de módulo provoca un error 500.
+                href="/diagnostico"
                 className="group rounded-[14px] border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:border-[color:var(--gold)]/50"
               >
                 <div className="flex items-start justify-between gap-2">

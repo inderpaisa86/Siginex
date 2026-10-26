@@ -6,12 +6,19 @@ import { Cuestionario } from "./Cuestionario";
 
 export const dynamic = "force-dynamic";
 
+// El [id] de esta ruta es el UUID de un diagnóstico. Validamos el formato
+// antes de consultar la base de datos: un valor no-UUID (p. ej. un id de
+// módulo como "sst") haría fallar la consulta Postgres con un error 500.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function DiagnosticoDetallePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  if (!UUID_RE.test(id)) notFound();
   const diag = await obtenerDiagnostico(id);
   if (!diag) notFound();
 
