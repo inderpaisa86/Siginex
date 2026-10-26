@@ -56,7 +56,10 @@ export function Sidebar() {
           {MODULOS_SGI.map((m) => (
             <li key={m.id}>
               <Link
-                href={`/diagnostico/${m.id}`}
+                // Los módulos son informativos: el diagnóstico se inicia desde
+                // /diagnostico. No enlazar a /diagnostico/<modulo>: esa ruta
+                // espera el UUID de un diagnóstico (un id de módulo da 500/404).
+                href="/diagnostico"
                 className="flex items-center gap-3 rounded-[9px] px-2.5 py-2 text-[13px] text-[#C6D0DE] transition-colors hover:bg-white/[0.06] hover:text-white"
               >
                 <span className="grid size-[22px] flex-none place-items-center rounded-[7px] border border-white/[0.18] font-[family-name:var(--font-plex-mono)] text-[10px] text-[#93A1B5]">
