@@ -3,6 +3,11 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { MODULOS_SGI, TOTAL_PREGUNTAS, KB_VERSION } from "@/lib/dominio/modulos";
 
+// Renderizar siempre en el servidor (sin caché estática de borde), igual que
+// el resto de páginas de la app. Evita que Vercel siga sirviendo una versión
+// HTML antigua de esta home tras un despliegue.
+export const dynamic = "force-dynamic";
+
 const KPIS = [
   { etiqueta: "Módulos del SGI", valor: String(MODULOS_SGI.length) },
   { etiqueta: "Preguntas del banco", valor: String(TOTAL_PREGUNTAS) },
