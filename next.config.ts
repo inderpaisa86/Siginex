@@ -5,13 +5,12 @@ import type { NextConfig } from "next";
 // se activa fuera de Vercel, para el build de Docker (VM propia / local).
 const esVercel = !!process.env.VERCEL;
 
-// Siginex se publica bajo la ruta /siginex para integrarse como una sección de
-// concientic.com mediante un rewrite/proxy en el proyecto concientic. El
-// basePath hace que todas las rutas internas (next/link, /api) y los assets
-// (/_next/...) queden prefijados con /siginex y no colisionen con concientic.
+// Sub-fase 3e: se RETIRÓ el `basePath`/`assetPrefix` "/siginex" que servía esta
+// app por proxy desde concientic. El frontend de SIGINEX ahora es nativo en
+// concientic (`concientic/src/app/siginex/*`), así que esta app deja de usarse
+// como destino del proxy. No se apaga su despliegue (eso es Fase 6); solo se
+// retira la configuración de proxy/basePath.
 const nextConfig: NextConfig = {
-  basePath: "/siginex",
-  assetPrefix: "/siginex",
   ...(esVercel ? {} : { output: "standalone" as const }),
 };
 
